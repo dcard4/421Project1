@@ -1,6 +1,27 @@
 import spacy
 from spellchecker import SpellChecker
 import language_tool_python
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from collections import Counter
+
+
+nltk.download('punkt')
+nltk.download('stopwords')
+
+def guess_topic(essay):
+    # Tokenize the essay into words
+    words = word_tokenize(essay)
+    # Filter out stopwords
+    filtered_words = [word.lower() for word in words if word.isalnum() and word.lower() not in stopwords.words('english')]
+    # Count word frequencies
+    word_freq = Counter(filtered_words)
+    # Get the most common words
+    common_words = word_freq.most_common(5)  # Adjust the number to get more or fewer topics
+    return [word for word, freq in common_words]
+
+
 
 # Load the spaCy English model for linguistic analysis
 nlp = spacy.load("en_core_web_sm")

@@ -1,4 +1,4 @@
-from scoring import essayLength, misspelledWords, checkGrammar, finalGrade
+from scoring import essayLength, misspelledWords, checkGrammar, finalGrade, guess_topic
 
 def processEssay(essay_text):
     # Evaluate the essay's length based on complex sentence count
@@ -13,10 +13,13 @@ def processEssay(essay_text):
     # Returns a list of grammar issues and a further adjusted score based on these issues
     grammar_issues, score_grammar = checkGrammar(essay_text, score_spelling)
 
+    # Guess the main topics of the essay
+    guessed_topics = guess_topic(essay_text)
+
     # Calculate the final score of the essay by averaging the scores from length, spelling, and grammar assessments
     # Also categorizes the final score into a qualitative category ("high" or "low")
     final_score, category = finalGrade([score_length, score_spelling, score_grammar])
-    
+
     # Print out the results of the essay analysis
     # Includes feedback and scores for each aspect, as well as the final aggregated score and category
     print(f"Essay Analysis Results:")
@@ -24,4 +27,5 @@ def processEssay(essay_text):
     print(f"Complex Sentence Score: {score_length}")
     print(f"Spelling Score: {score_spelling} (Misspelled Words: {', '.join(misspelled) if misspelled else 'None'})")
     print(f"Grammar Score: {score_grammar} (Issues: {'; '.join(grammar_issues) if grammar_issues else 'None'})")
+    print(f"Guessed Topics: {', '.join(guessed_topics)}")  # Display guessed topics
     print(f"Total Score: {final_score} ({category})")
