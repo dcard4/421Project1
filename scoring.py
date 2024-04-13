@@ -2,49 +2,62 @@ import spacy
 from spellchecker import SpellChecker
 import language_tool_python
 
-# Load the spaCy English model
+# Load the spaCy English model for linguistic analysis
 nlp = spacy.load("en_core_web_sm")
 
 def essayLength(essay):
+    # Analyze the essay to break it into sentences
     doc = nlp(essay)
     sentences = list(doc.sents)
+    # Count complex sentences based on the number of verbs
     complexSentences = sum(1 for sentence in sentences if sum(1 for token in sentence if token.pos_ == "VERB") > 1)
+    
+    # Determine feedback and score based on the count of complex sentences
     feedback, score = "", 0
     if complexSentences < 5:
-        feedback = f"The essay is too short, only {complexSentences} complex sentences detected."
+        feedback = "The essay is too short, only {0} complex sentences detected.".format(complexSentences)
         score = 20
     elif complexSentences < 7:
-        feedback = f"The essay is somewhat short, with {complexSentences} complex sentences."
+        feedback = "The essay is somewhat short, with {0} complex sentences.".format(complexSentences)
         score = 40
     elif complexSentences < 9:
-        feedback = f"The essay is nearing adequate length with {complexSentences} complex sentences."
+        feedback = "The essay is nearing adequate length with {0} complex sentences.".format(complexSentences)
         score = 60
     elif complexSentences < 10:
-        feedback = f"The essay is almost at the ideal length with {complexSentences} complex sentences."
+        feedback = "The essay is almost at the ideal length with {0} complex sentences.".format(complexSentences)
         score = 80
     else:
-        feedback = f"The essay achieves the ideal length with {complexSentences} complex sentences or more."
+        feedback = "The essay achieves the ideal length with {0} complex sentences or more.".format(complexSentences)
         score = 100
     return feedback, score
 
 def misspelledWords(essay, initial_score):
+    # Initialize spell checker
     spell = SpellChecker()
+    # Extract words from the essay
     doc = nlp(essay)
     words = [token.text for token in doc if token.is_alpha]
+    # Identify misspelled words
     misspelled = spell.unknown(words)
-    deductions_per_misspelled = 5  # Deduct 5 points per misspelled word
+    # Calculate score deductions for misspelled words
+    deductions_per_misspelled = 5
     score = max(0, initial_score - len(misspelled) * deductions_per_misspelled)
     return misspelled, score
 
 def checkGrammar(essay, initial_score):
+    # Initialize grammar checking tool
     tool = language_tool_python.LanguageTool('en-US')
+    # Check the essay for grammatical issues
     matches = tool.check(essay)
-    grammar_issues = [f"{match.message} (Context: {match.context}) [Rule ID: {match.ruleId}]" for match in matches]
+    grammar_issues = ["{0} (Context: {1}) [Rule ID: {2}]".format(match.message, match.context, match.ruleId) for match in matches]
+    # Calculate score deductions for grammar issues
     deductions_per_issue = 3
     score = max(0, initial_score - len(grammar_issues) * deductions_per_issue)
     return grammar_issues, score
 
 def finalGrade(grades):
+    # Calculate the final grade based on averaged component scores
     total = sum(grades) / len(grades) if grades else 0
+    # Categorize the final score
     category = "high" if total >= 60 else "low"
     return total, category
