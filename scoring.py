@@ -249,7 +249,7 @@ def analyze_essay(essay):
 
 def sentence_coherence(essay):
     sentences = nltk.sent_tokenize(essay)
-    embeddings = [get_embedding(sentence) for sentence in sentences]
+    embeddings = [get_word_embeddings(sentence) for sentence in sentences]
     similarities = []
     for i in range(len(embeddings) - 1):
         sim = np.dot(embeddings[i], embeddings[i+1]) / (np.linalg.norm(embeddings[i]) * np.linalg.norm(embeddings[i+1]))

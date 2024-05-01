@@ -1,6 +1,6 @@
 from scoring import essayLength, misspelledWords, checkGrammar, finalGrade, guess_topic,parse_essay,check_sentence_starts,check_missing_constituents
 # ,evaluate_sentences,check_subordinating_conjunctions
-from scoring import essay_to_vec,check_subordinating_conjunctions,get_word_embeddings,analyze_essay
+from scoring import essay_to_vec,check_subordinating_conjunctions,get_word_embeddings,analyze_essay,sentence_coherence
 
 
 
@@ -32,6 +32,7 @@ def processEssay(essay_text):
     word_vectors, avg_vector = get_word_embeddings(essay_text)
     essay_vector = essay_to_vec(essay_text)
     prompt, similarity_score = analyze_essay(essay_text)
+    coherence_score = sentence_coherence(essay_text)
     
     # prompt, similarity_score = analyze_essay(essay_text)
     
@@ -50,6 +51,7 @@ def processEssay(essay_text):
     print(f"Sentence Start Issues: {'; '.join(sentence_start_issues) if sentence_start_issues else 'None'}")
     print(f"Constituent Issues: {'; '.join(constituent_issues) if constituent_issues else 'None'}")
     print(f"Subordinating Conjunction Issues: {'; '.join(conjunction_issues) if conjunction_issues else 'None'}")
+    
     print("Parse Tree:")
     for tree in trees:
         print(tree)
@@ -57,10 +59,13 @@ def processEssay(essay_text):
     print("Word Embeddings:")
     for word, vector in word_vectors:
         print(f"Word: {word}, Vector: {vector[:5]}...")  # Display first 5 elements for brevity
+    
     print("Average Vector of the Essay:", avg_vector[:5])  # Display first 5 elements for brevity
     print("Essay Vector:", essay_vector)
     print("Hypothetical Prompt:", prompt)
     print("Cosine Similarity:", similarity_score)
+    print("Coherence Score:", coherence_score)
+    
     print(f"Total Score: {final_score} ({category})")
     print(f"Total Score: {final_score} ({category})")
     
