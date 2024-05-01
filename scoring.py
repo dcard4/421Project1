@@ -7,8 +7,6 @@ from nltk.tokenize import word_tokenize
 from collections import Counter
 
 
-nltk.download('punkt')
-nltk.download('stopwords')
 
 def guess_topic(essay):
     # Tokenize the essay into words
@@ -22,9 +20,9 @@ def guess_topic(essay):
     return [word for word, freq in common_words]
 
 
-
 # Load the spaCy English model for linguistic analysis
 nlp = spacy.load("en_core_web_sm")
+
 
 def misspelledWords(essay, initial_score):
     spell = SpellChecker()
@@ -74,7 +72,6 @@ def essayLength(essay):
     return feedback, score
 
 
-
 def checkGrammar(essay, initial_score):
     # Initialize grammar checking tool
     tool = language_tool_python.LanguageTool('en-US')
@@ -85,6 +82,7 @@ def checkGrammar(essay, initial_score):
     deductions_per_issue = 3
     score = max(0, initial_score - len(grammar_issues) * deductions_per_issue)
     return grammar_issues, score
+
 
 def evaluate_grammar(essay):
     doc = nlp(essay)
@@ -105,6 +103,7 @@ def evaluate_grammar(essay):
 
     return issues
 
+
 def check_subordinating_conjunctions(essay):
     doc = nlp(essay)
     issues = []
@@ -124,6 +123,7 @@ def check_subordinating_conjunctions(essay):
 
     return issues
 
+
 def check_sentence_starts(essay):
     doc = nlp(essay)
     issues = []
@@ -135,10 +135,11 @@ def check_sentence_starts(essay):
         elif first_token.tag.startswith('VB'):  # Verbs
             if first_token.tag not in ['VBG', 'VBN']:  # Gerunds or past participles might be okay in certain contexts
                 issues.append(f"Declarative sentence starts with a verb: '{sent.text}'")
-        elif firs_ttoken.pos == 'AUX':
+        elif first_token.pos == 'AUX':
             if sent[-1].text != '?':
                 issues.append(f"Question should end with a question mark: '{sent.text}'")
     return issues
+
 
 def check_missing_constituents(essay):
     doc = nlp(essay)
@@ -152,9 +153,24 @@ def check_missing_constituents(essay):
         # More rules can be added here based on specific needs
     return issues
 
+
 def finalGrade(grades):
     # Calculate the final grade based on averaged component scores
     total = sum(grades) / len(grades) if grades else 0
     # Categorize the final score
     category = "high" if total >= 60 else "low"
     return total, category
+
+
+
+def parse_tree(essay):
+    # Tokenize the essay text
+    tokens = nltk.word_tokenize(essay)
+    # Tag the tokens with parts of speech
+    tagged_tokens = nltk.pos_tag(tokens)
+    # Generate the parse tree using named entity chunking
+    tree = nltk.chunk.ne_chunk(tagged_tokens)
+    return tree
+
+
+

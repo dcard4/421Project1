@@ -1,4 +1,6 @@
-from scoring import essayLength, misspelledWords, checkGrammar, finalGrade, guess_topic,evaluate_grammar,check_subordinating_conjunctions,check_missing_constituents,check_sentence_starts
+from scoring import essayLength, misspelledWords, checkGrammar, finalGrade, guess_topic,evaluate_grammar,check_subordinating_conjunctions,check_missing_constituents,check_sentence_starts,parse_tree
+
+
 
 def processEssay(essay_text):
     # Evaluate the essay's length based on complex sentence count
@@ -22,6 +24,9 @@ def processEssay(essay_text):
     grammatical_wellformedness_issues = evaluate_grammar(essay_text)
     sentence_start_issues = check_sentence_starts(essay_text)
     constituent_issues = check_missing_constituents(essay_text)
+    conjunction_issues = check_subordinating_conjunctions(essay_text)
+    
+    tree = parse_tree(essay_text)
 
 
     print(f"Sentence Start Issues: {'; '.join(sentence_start_issues) if sentence_start_issues else 'None'}")
@@ -42,6 +47,9 @@ def processEssay(essay_text):
         print(issue)
     print(f"Sentence Start Issues: {'; '.join(sentence_start_issues) if sentence_start_issues else 'None'}")
     print(f"Constituent Issues: {'; '.join(constituent_issues) if constituent_issues else 'None'}")
+    print(f"Subordinating Conjunction Issues: {'; '.join(conjunction_issues) if conjunction_issues else 'None'}")
+    print("Parse Tree:")
+    print(tree)
     
     print(f"Total Score: {final_score} ({category})")
     
