@@ -1,5 +1,5 @@
 from scoring import essayLength, misspelledWords, checkGrammar, finalGrade, guess_topic,parse_essay,check_sentence_starts,check_missing_constituents
-# ,evaluate_sentences,check_subordinating_conjunctions
+
 from scoring import essay_to_vec,check_subordinating_conjunctions,get_word_embeddings,analyze_essay,analyze_essay_coherence
 
 
