@@ -247,130 +247,23 @@ def analyze_essay(essay):
     return hypothetical_prompt, similarity
 
 
-def sentence_coherence(essay):
-    sentences = nltk.sent_tokenize(essay)
-    embeddings = [get_word_embeddings(sentence) for sentence in sentences]
-    similarities = []
-    for i in range(len(embeddings) - 1):
-        sim = np.dot(embeddings[i], embeddings[i+1]) / (np.linalg.norm(embeddings[i]) * np.linalg.norm(embeddings[i+1]))
-        similarities.append(sim)
-    # Analyze variations here
-    return np.std(similarities)
-
-
-# def evaluate_grammar(essay):
-#     doc = nlp(essay)
-#     issues = []
-
-#     for sent in doc.sents:
-#         root = [token for token in sent if token.head == token][0]  # Identify the root of the sentence
-#         if root.pos != "VERB" and root.pos != "AUX":
-#             issues.append(f"Potential sentence fragment without main verb: '{sent.text}'")
-
-#         for token in sent:
-#             # Check for missing subjects in main clauses
-#             if token.dep == "ROOT" and not any(child.dep == "nsubj" for child in token.children):
-#                 issues.append(f"Missing subject in sentence: '{sent.text}'")
-#             # Check for other common errors (e.g., incorrect prepositions, verb forms, etc.)
-#             if token.dep == "prep" and not any(child.dep_ == "pobj" for child in token.children):
-#                 issues.append(f"Preposition without object: '{token.text}' in '{sent.text}'")
-
-#     return issues
-
-
-
-
-
-# def evaluate_sentences(essay):
-#     nlp = spacy.load("en_core_web_sm")
-#     doc = nlp(essay)
-#     issues = []
-
-#     for sent in doc.sents:
-#         tokens = list(sent)
-#         # Check sentence start for declarative and interrogative sentences
-#         if tokens[0].tag_ in ['VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ']:  # Starts with a verb
-#             if sent.text.endswith('?'):
-#                 if tokens[0].tag_ not in ['VBZ', 'VBP']:  # Not starting with an auxiliary or modal verb
-#                     issues.append(f"Question may not start properly with a verb: '{sent.text}'")
-#             else:
-#                 issues.append(f"Declarative sentence starts with a verb: '{sent.text}'")
-        
-#         # Check for missing constituents
-#         for token in sent:
-#             if token.dep_ in ['nsubj', 'dobj'] and token.head.pos_ == 'VERB':
-#                 if not any(child for child in token.children if child.dep_ in ['det', 'nsubjpass']):
-#                     if token.tag_ != 'NNP':  # Proper nouns do not always need a determiner
-#                         issues.append(f"Possible missing determiner before '{token.text}' in '{sent.text}'")
-
-#         # Check for proper use of subordinating conjunctions
-#         for token in sent:
-#             if token.dep_ == 'mark':  # Token is a subordinating conjunction
-#                 if token.head.pos_ != 'VERB':
-#                     issues.append(f"Subordinating conjunction '{token.text}' not followed by a verb in '{sent.text}'")
-
-#     return issues
-
-
-
-
-
-
-
-
-# def extract_keywords(text, num_keywords=5):
-#     """
-#     Extract keywords from the text using spaCy for POS tagging and lemmatization.
-#     """
-#     doc = nlp(text)
-#     # Filter tokens that are common words or punctuation marks
-#     words = [token.lemma_ for token in doc if token.is_alpha and not token.is_stop]
-#     word_freq = Counter(words)
-#     # Return the most common keywords
-#     keywords = [word for word, freq in word_freq.most_common(num_keywords)]
-#     return keywords
-
-
-# def formulate_prompt(keywords):
+def analyze_essay_coherence(essay_text):
+    doc = nlp(essay_text)
+    essay_vectors = [essay_to_vec(sent.text) for sent in doc.sents]
     
-#     # Check if there are enough keywords to form a prompt
-#     if not keywords:
-#         return "Discuss the key aspects of your topic."
+    # Compute cosine similarities between consecutive sentences
+    similarities = [cosine_similarity(essay_vectors[i], essay_vectors[i + 1]) for i in range(len(essay_vectors) - 1)]
     
-#     # Create a topic sentence from keywords
-#     topic_sentence = ' and '.join([', '.join(keywords[:-1]), keywords[-1]] if len(keywords) > 1 else keywords)
+    # Statistical analysis (this is simplified; you may need to adjust this)
+    mean_sim = np.mean(similarities)
+    std_dev = np.std(similarities)
+    outliers = [sim for sim in similarities if abs(sim - mean_sim) > 2 * std_dev]
     
-#     # Formulate a complete prompt
-#     prompt = f"Do you agree or disagree with the following statement? Successful people should focus on {topic_sentence}. Use specific reasons and examples to support your answer."
+    # Scoring (simplified mapping to 1-5 scale based on the example, can be adjusted)
+    score = 5 - len(outliers) // (len(similarities) // 5)  # Decrease score based on number of outliers
+    score = max(1, min(score, 5))  # Ensure score is within 1 to 5
     
-#     return prompt
-
-
-# def get_average_vector(text):
-    
-#     doc = nlp(text)
-#     vectors = [token.vector for token in doc if token.has_vector and not token.is_stop]
-#     if vectors:
-#         return np.mean(vectors, axis=0)
-#     else:
-#         return np.zeros((300,)) 
-
-
-# def cosine_similarity(vec1, vec2):
-    
-#     if np.all(vec1 == 0) or np.all(vec2 == 0):
-#         return 0.0
-#     return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
-
-
-# def analyze_essay(essay):
-    
-#     keywords = extract_keywords(essay)
-#     hypothetical_prompt = formulate_prompt(keywords)
-#     prompt_vector = get_average_vector(hypothetical_prompt)
-#     essay_vector = get_average_vector(essay)
-#     similarity = cosine_similarity(prompt_vector, essay_vector)
-#     return hypothetical_prompt, similarity
+    return score, mean_sim, std_dev, outliers
 
 
 def finalGrade(grades):
